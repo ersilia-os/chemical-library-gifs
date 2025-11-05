@@ -4,6 +4,7 @@ import shutil
 import tempfile
 import subprocess
 import cairosvg
+import argparse
 
 from tqdm import tqdm
 from rdkit import Chem
@@ -136,6 +137,20 @@ def main(input_csv, output_gif, color_name, size=512, duration_ms=200):
 
 
 if __name__ == "__main__":
-    input_csv = os.path.join(root, "..", "..", "data", "example_compounds.csv")
-    color_name = "white"
-    main(input_csv, "test.gif", color_name)    
+
+    args = argparse.ArgumentParser(description="Generate animated GIF of molecules from SMILES.")
+    
+    args.add_argument("-i", "--input_csv", type=str, help="Input CSV file with SMILES.")
+    args.add_argument("-o", "--output_gif", type=str, help="Output GIF file.")
+    args.add_argument("-c", "--color", type=str, default="white", help="Background color name.")
+    args.add_argument("-s", "--size", type=int, default=512, help="Size of each frame in pixels.")
+    args.add_argument("-d", "--duration", type=int, default=200, help="Duration of each frame in milliseconds.")
+
+    parsed_args = args.parse_args()
+    main(
+        input_csv=parsed_args.input_csv,
+        output_gif=parsed_args.output_gif,
+        color_name=parsed_args.color,
+        size=parsed_args.size,
+        duration_ms=parsed_args.duration
+    )
