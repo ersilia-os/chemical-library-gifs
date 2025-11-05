@@ -1,3 +1,6 @@
 smiles
-CCCCOCCCC
-CCCCCN
+COc1ccc2c(NC(=O)Nc3cccc(C(F)(F)F)n3)ccnc2c1
+O=C(O)c1cc(C(=O)O)c(C(=O)N(Cc2cccc(Oc3ccccc3)c2)[C@H]2CCCc3ccccc32)cc1C(=O)O
+Clc1cccc(-c2nnnn2Cc2cccnc2)c1Cl
+CCCCC
+CCCCNCCCC
