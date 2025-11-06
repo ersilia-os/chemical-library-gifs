@@ -17,7 +17,7 @@ git clone https://github.com/ersilia-os/chemical-library-gifs.git
 cd chemical-library-gifs
 ```
 
-To get started, create a Conda environment:
+Then, create a Conda environment:
 
 ```bash
 conda create -n chemgifs python=3.12
@@ -30,7 +30,7 @@ You will need Cairo installed:
 conda install -c conda-forge cairo
 ```
 
-Then install the package using pip:
+Finally, install the package using pip:
 
 ```bash
 pip install .
