@@ -9,6 +9,7 @@ import argparse
 from tqdm import tqdm
 from rdkit import Chem
 from PIL import Image
+import platform
 
 import xml.etree.ElementTree as ET
 
@@ -32,8 +33,24 @@ def get_rgb_color(name):
         raise ValueError(f"Invalid color name: {name}. Valid options are: {', '.join(colors.keys())}")
 
 
+def resolve_mol2svg_exec():
+    system = platform.system()
+    machine = platform.machine()
+
+    if system == "Linux" and machine == "x86_64":
+        return os.path.abspath(os.path.join(root, "..", "tools", "linux_x86", "mol2svg"))
+    
+    if system == "Darwin" and machine == "x86_64":
+        return os.path.abspath(os.path.join(root, "..", "tools", "macosx_x86", "mol2svg"))
+
+    if system == "Darwin" and machine == "arm64":
+        return os.path.abspath(os.path.join(root, "..", "tools", "macosx_arm64", "mol2svg"))
+
+    raise Exception("mol2svg binary not found for this platform")
+
+
 def get_raw_mol_svg(name, smiles, output_dir, color):
-    mol2svg_exec = os.path.join(root, "..", "tools", "mol2svg")
+    mol2svg_exec = resolve_mol2svg_exec()
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
         return

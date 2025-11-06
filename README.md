@@ -1,37 +1,48 @@
-# My Ersilia Python Package
+# Chemical Library GIFs
 
-Template repository for an Ersilia Python package.
+Produce simple GIFs to quickly visualize chemical libraries.
 
-This package provides a foundation for developing and distributing Python tools within the Ersilia ecosystem. It is designed to help researchers and developers quickly set up, share, and maintain reproducible code for AI/ML models, particularly in the context of antimicrobial drug discovery. If you are developing a package, use this paragraph as placeholder for an introduction about the package.
+This simple Python package produces a simple GIF file for a collection of compounds. Below is a visualization of a sample chemical library of 1000 Enamine REAL compounds:
+
+![Sample Library](assets/random_1000_1.gif)
 
 ## Installation
+
+To get started, clone the repository:
+
+```bash
+git clone https://github.com/ersilia-os/chemical-library-gifs.git
+cd chemical-library-gifs
+```
 
 To get started, create a Conda environment:
 
 ```bash
-conda create -n my_env python=3.12
-conda activate my_env
+conda create -n chemgifs python=3.12
+conda activate chemgifs
+```
+
+You will need Cairo installed:
+
+```bash
+conda install -c conda-forge cairo
 ```
 
 Then install the package using pip:
 
 ```bash
-pip install git+https://github.com/ersilia-os/my-ersilia-python-package.git
+pip install .
 ```
 
 ## Usage
 
-Provide an end-to-end usage example. All data should be included in the repository for reproducibility.
+Simply pass a one-column CSV file, with a header (`smiles`).
 
-Example:
-
-```python
-from my_package.core import hello
-
-hello("Ersilia")
+```bash
+chemgifs -i molecules.csv -o molecules.gif -c yellow
 ```
 
-This prints `"Hello, Ersilia!"` in the Python terminal.
+Accepted color names correspond to the official Ersilia [color palette](https://ersilia.gitbook.io/ersilia-book/styles/brand-guidelines).
 
 ## About the Ersilia Open Source Initiative
 

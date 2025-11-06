@@ -15,8 +15,13 @@ requires-python = ">=3.12"
 
 dependencies = [
   "numpy>=1.21",
-  "cairosvg==2.8.2"
+  "cairosvg==2.8.2",
+  "tqdm==4.67.1",
+  "rdkit==2025.09.1",
 ]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[project.scripts]
+chemgifs = "chemgifs.main:main"
