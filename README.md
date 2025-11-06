@@ -6,6 +6,8 @@ This simple Python package produces a simple GIF file for a collection of compou
 
 ![Sample Library](assets/random_1000_1.gif)
 
+Molecules are displayed using the excellent [mol2ps/mol2svg](https://homepage.univie.ac.at/norbert.haider/cheminf/mol2ps.html) tool developed by [Norbert Haider](https://homepage.univie.ac.at/norbert.haider/).
+
 ## Installation
 
 To get started, clone the repository:
@@ -39,10 +41,10 @@ pip install .
 Simply pass a one-column CSV file, with a header (`smiles`).
 
 ```bash
-chemgifs -i molecules.csv -o molecules.gif -c yellow
+chemgifs -i molecules.csv -o molecules.gif -c yellow -s 512 -d 200
 ```
 
-Accepted color names correspond to the official Ersilia [color palette](https://ersilia.gitbook.io/ersilia-book/styles/brand-guidelines).
+Accepted color names correspond to the official Ersilia [color palette](https://ersilia.gitbook.io/ersilia-book/styles/brand-guidelines). By default, the size of the image will be 512 pixels and the duration of each frame 200 ms.
 
 ## About the Ersilia Open Source Initiative
 

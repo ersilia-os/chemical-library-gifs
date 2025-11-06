@@ -30,7 +30,9 @@ def get_rgb_color(name):
     if name in colors:
         return colors[name]
     else:
-        raise ValueError(f"Invalid color name: {name}. Valid options are: {', '.join(colors.keys())}")
+        raise ValueError(
+            f"Invalid color name: {name}. Valid options are: {', '.join(colors.keys())}"
+        )
 
 
 def resolve_mol2svg_exec():
@@ -38,13 +40,19 @@ def resolve_mol2svg_exec():
     machine = platform.machine()
 
     if system == "Linux" and machine == "x86_64":
-        return os.path.abspath(os.path.join(root, "..", "tools", "linux_x86", "mol2svg"))
-    
+        return os.path.abspath(
+            os.path.join(root, "..", "tools", "linux_x86", "mol2svg")
+        )
+
     if system == "Darwin" and machine == "x86_64":
-        return os.path.abspath(os.path.join(root, "..", "tools", "macosx_x86", "mol2svg"))
+        return os.path.abspath(
+            os.path.join(root, "..", "tools", "macosx_x86", "mol2svg")
+        )
 
     if system == "Darwin" and machine == "arm64":
-        return os.path.abspath(os.path.join(root, "..", "tools", "macosx_arm64", "mol2svg"))
+        return os.path.abspath(
+            os.path.join(root, "..", "tools", "macosx_arm64", "mol2svg")
+        )
 
     raise Exception("mol2svg binary not found for this platform")
 
@@ -66,7 +74,7 @@ def get_raw_mol_svg(name, smiles, output_dir, color):
 def square_and_center_svg(input_svg, output_svg, background_rgb):
     tree = ET.parse(input_svg)
     root = tree.getroot()
-    ns = ''
+    ns = ""
     if root.tag.startswith("{"):
         ns = root.tag.split("}")[0] + "}"
     vb = root.attrib.get("viewBox")
@@ -84,13 +92,16 @@ def square_and_center_svg(input_svg, output_svg, background_rgb):
     root.set("width", str(size))
     root.set("height", str(size))
     fill_color = f"rgb({background_rgb[0]}, {background_rgb[1]}, {background_rgb[2]})"
-    bg_rect = ET.Element(f"{ns}rect", {
-        "x": str(x - dx),
-        "y": str(y - dy),
-        "width": str(size),
-        "height": str(size),
-        "fill": fill_color
-    })
+    bg_rect = ET.Element(
+        f"{ns}rect",
+        {
+            "x": str(x - dx),
+            "y": str(y - dy),
+            "width": str(size),
+            "height": str(size),
+            "fill": fill_color,
+        },
+    )
     root.insert(0, bg_rect)
     tree.write(output_svg)
 
@@ -113,9 +124,11 @@ def read_smiles(input_csv):
 
 
 def svg_to_png(name, output_dir, size):
-    input_svg = os.path.join(output_dir, name+".svg")
-    output_png = os.path.join(output_dir, name+".png")
-    cairosvg.svg2png(url=input_svg, write_to=output_png, output_width=size, output_height=size)
+    input_svg = os.path.join(output_dir, name + ".svg")
+    output_png = os.path.join(output_dir, name + ".png")
+    cairosvg.svg2png(
+        url=input_svg, write_to=output_png, output_width=size, output_height=size
+    )
     os.remove(input_svg)
 
 
@@ -131,11 +144,11 @@ def pngs_to_gif(png_files, output_gif, duration, loop=0):
         duration=duration,
         loop=loop,
         optimize=False,
-        disposal=2
+        disposal=2,
     )
 
 
-def main(input_csv, output_gif, color_name, size=512, duration_ms=200):
+def run(input_csv, output_gif, color_name, size, duration_ms):
     tmp_dir = tempfile.mkdtemp("ersilia-")
     if os.path.exists(tmp_dir):
         shutil.rmtree(tmp_dir)
@@ -153,21 +166,36 @@ def main(input_csv, output_gif, color_name, size=512, duration_ms=200):
     shutil.rmtree(tmp_dir)
 
 
-if __name__ == "__main__":
+def main():
+    args = argparse.ArgumentParser(
+        description="Generate animated GIF of molecules from SMILES."
+    )
 
-    args = argparse.ArgumentParser(description="Generate animated GIF of molecules from SMILES.")
-    
     args.add_argument("-i", "--input_csv", type=str, help="Input CSV file with SMILES.")
     args.add_argument("-o", "--output_gif", type=str, help="Output GIF file.")
-    args.add_argument("-c", "--color", type=str, default="white", help="Background color name.")
-    args.add_argument("-s", "--size", type=int, default=512, help="Size of each frame in pixels.")
-    args.add_argument("-d", "--duration", type=int, default=200, help="Duration of each frame in milliseconds.")
+    args.add_argument(
+        "-c", "--color", type=str, default="white", help="Background color name."
+    )
+    args.add_argument(
+        "-s", "--size", type=int, default=512, help="Size of each frame in pixels."
+    )
+    args.add_argument(
+        "-d",
+        "--duration",
+        type=int,
+        default=200,
+        help="Duration of each frame in milliseconds.",
+    )
 
     parsed_args = args.parse_args()
-    main(
+    run(
         input_csv=parsed_args.input_csv,
         output_gif=parsed_args.output_gif,
         color_name=parsed_args.color,
         size=parsed_args.size,
-        duration_ms=parsed_args.duration
+        duration_ms=parsed_args.duration,
     )
+
+
+if __name__ == "__main__":
+    main()
