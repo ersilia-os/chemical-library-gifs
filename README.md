@@ -2,7 +2,7 @@
 
 Produce simple GIFs to quickly visualize chemical libraries.
 
-This simple Python package produces a simple GIF file for a collection of compounds. Below is a visualization of a sample chemical library of 1000 Enamine REAL compounds:
+This simple Python package produces a GIF file to display a collection of compounds. Below is a visualization of a sample chemical library of 1000 Enamine REAL compounds:
 
 ![Sample Library](assets/random_1000_1.gif)
 
