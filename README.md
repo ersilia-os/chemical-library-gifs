@@ -2,11 +2,27 @@
 
 Produce simple GIFs to quickly visualize chemical libraries.
 
-This simple Python package produces a GIF file to display a collection of compounds. Below is a visualization of a sample chemical library of 1000 Enamine REAL compounds:
+This simple Python package produces a GIF (or PNG) to display a collection of compounds. Molecules are displayed using the excellent [mol2ps/mol2svg](https://homepage.univie.ac.at/norbert.haider/cheminf/mol2ps.html) tool developed by [Norbert Haider](https://homepage.univie.ac.at/norbert.haider/).
 
-![Sample Library](assets/random_1000_1.gif)
+### One molecule per frame (1×1 grid)
 
-Molecules are displayed using the excellent [mol2ps/mol2svg](https://homepage.univie.ac.at/norbert.haider/cheminf/mol2ps.html) tool developed by [Norbert Haider](https://homepage.univie.ac.at/norbert.haider/).
+The default mode cycles through one molecule at a time — useful for browsing individual structures:
+
+```bash
+chemgifs -i molecules.csv -o molecules.gif
+```
+
+![Sample Library 1x1](assets/random_1000_1.gif)
+
+### Grid layout (4×8 grid)
+
+Use `--n_rows` and `--n_cols` to show multiple molecules per frame — useful for getting an overview of a whole library at a glance:
+
+```bash
+chemgifs -i molecules.csv -o molecules.gif --n_rows 4 --n_cols 8
+```
+
+![Sample Library 4x8](assets/random_1000_grid4x8.gif)
 
 ## Installation
 

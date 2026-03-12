@@ -232,7 +232,7 @@ def main():
     parsed_args = args.parse_args()
     run(
         input_csv=parsed_args.input_csv,
-        output_gif=parsed_args.output_gif,
+        output_file=parsed_args.output_gif,
         color_name=parsed_args.color,
         size=parsed_args.size,
         duration_ms=parsed_args.duration,
