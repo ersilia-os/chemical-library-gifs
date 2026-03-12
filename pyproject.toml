@@ -23,5 +23,8 @@ dependencies = [
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+chemgifs = ["tools/**/*"]
+
 [project.scripts]
 chemgifs = "chemgifs.main:main"

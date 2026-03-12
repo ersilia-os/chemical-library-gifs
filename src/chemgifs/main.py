@@ -8,6 +8,7 @@ import argparse
 
 from tqdm import tqdm
 from rdkit import Chem
+from rdkit.Chem import AllChem
 from PIL import Image
 import platform
 
@@ -41,17 +42,17 @@ def resolve_mol2svg_exec():
 
     if system == "Linux" and machine == "x86_64":
         return os.path.abspath(
-            os.path.join(root, "..", "tools", "linux_x86", "mol2svg")
+            os.path.join(root, "tools", "linux_x86", "mol2svg")
         )
 
     if system == "Darwin" and machine == "x86_64":
         return os.path.abspath(
-            os.path.join(root, "..", "tools", "macosx_x86", "mol2svg")
+            os.path.join(root, "tools", "macosx_x86", "mol2svg")
         )
 
     if system == "Darwin" and machine == "arm64":
         return os.path.abspath(
-            os.path.join(root, "..", "tools", "macosx_arm64", "mol2svg")
+            os.path.join(root, "tools", "macosx_arm64", "mol2svg")
         )
 
     raise Exception("mol2svg binary not found for this platform")
@@ -62,6 +63,7 @@ def get_raw_mol_svg(name, smiles, output_dir, color):
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
         return
+    AllChem.Compute2DCoords(mol)
     sdf_file = os.path.join(output_dir, f"{name}.sdf")
     svg_file = os.path.join(output_dir, f"{name}.svg")
     with Chem.SDWriter(sdf_file) as writer:
@@ -132,15 +134,30 @@ def svg_to_png(name, output_dir, size):
     os.remove(input_svg)
 
 
-def pngs_to_gif(png_files, output_gif, duration, loop=0):
-    images = [Image.open(p) for p in png_files]
-    images = [img.convert("RGBA") for img in images]
-    w, h = images[0].size
-    images = [img.resize((w, h)) for img in images]
-    images[0].save(
+def make_grid_image(png_files, n_rows, n_cols, cell_size, background_rgb):
+    grid_w = n_cols * cell_size
+    grid_h = n_rows * cell_size
+    grid = Image.new("RGBA", (grid_w, grid_h), background_rgb + (255,))
+    for idx, p in enumerate(png_files):
+        row = idx // n_cols
+        col = idx % n_cols
+        with Image.open(p) as img:
+            img = img.convert("RGBA").resize((cell_size, cell_size))
+        grid.paste(img, (col * cell_size, row * cell_size))
+    return grid
+
+
+def pngs_to_gif(png_files, output_gif, duration, n_rows, n_cols, cell_size, background_rgb, loop=0):
+    cells_per_frame = n_rows * n_cols
+    frames = []
+    for i in range(0, len(png_files), cells_per_frame):
+        chunk = png_files[i : i + cells_per_frame]
+        frames.append(make_grid_image(chunk, n_rows, n_cols, cell_size, background_rgb))
+
+    frames[0].save(
         output_gif,
         save_all=True,
-        append_images=images[1:],
+        append_images=frames[1:],
         duration=duration,
         loop=loop,
         optimize=False,
@@ -148,21 +165,28 @@ def pngs_to_gif(png_files, output_gif, duration, loop=0):
     )
 
 
-def run(input_csv, output_gif, color_name, size, duration_ms):
+def run(input_csv, output_file, color_name, size, duration_ms, n_rows=1, n_cols=1, max_mols=None):
+    background_rgb = get_rgb_color(color_name)
+    is_png = output_file.lower().endswith(".png")
     tmp_dir = tempfile.mkdtemp("ersilia-")
     if os.path.exists(tmp_dir):
         shutil.rmtree(tmp_dir)
     os.makedirs(tmp_dir)
     smiles_list = read_smiles(input_csv)
+    if is_png:
+        smiles_list = smiles_list[:n_rows * n_cols]
+    elif max_mols is not None:
+        smiles_list = smiles_list[:max_mols]
     for i, smiles in tqdm(enumerate(smiles_list)):
         name = "mol_{0}".format(str(i).zfill(6))
         get_mol_svg(name, smiles, tmp_dir, color_name)
         svg_to_png(name, tmp_dir, size=size)
-    png_files = []
-    for fn in os.listdir(tmp_dir):
-        png_files += [os.path.join(tmp_dir, fn)]
-    png_files = sorted(png_files)
-    pngs_to_gif(png_files, output_gif, duration=duration_ms)
+    png_files = sorted(os.path.join(tmp_dir, fn) for fn in os.listdir(tmp_dir))
+    if is_png:
+        frame = make_grid_image(png_files, n_rows, n_cols, size, background_rgb)
+        frame.save(output_file)
+    else:
+        pngs_to_gif(png_files, output_file, duration=duration_ms, n_rows=n_rows, n_cols=n_cols, cell_size=size, background_rgb=background_rgb)
     shutil.rmtree(tmp_dir)
 
 
@@ -172,7 +196,7 @@ def main():
     )
 
     args.add_argument("-i", "--input_csv", type=str, help="Input CSV file with SMILES.")
-    args.add_argument("-o", "--output_gif", type=str, help="Output GIF file.")
+    args.add_argument("-o", "--output_gif", type=str, help="Output file (.gif or .png).")
     args.add_argument(
         "-c", "--color", type=str, default="white", help="Background color name."
     )
@@ -186,6 +210,24 @@ def main():
         default=200,
         help="Duration of each frame in milliseconds.",
     )
+    args.add_argument(
+        "--n_rows",
+        type=int,
+        default=1,
+        help="Number of rows in the grid per frame.",
+    )
+    args.add_argument(
+        "--n_cols",
+        type=int,
+        default=1,
+        help="Number of columns in the grid per frame.",
+    )
+    args.add_argument(
+        "--max_mols",
+        type=int,
+        default=None,
+        help="Maximum number of molecules to process.",
+    )
 
     parsed_args = args.parse_args()
     run(
@@ -194,6 +236,9 @@ def main():
         color_name=parsed_args.color,
         size=parsed_args.size,
         duration_ms=parsed_args.duration,
+        n_rows=parsed_args.n_rows,
+        n_cols=parsed_args.n_cols,
+        max_mols=parsed_args.max_mols,
     )
 
 
