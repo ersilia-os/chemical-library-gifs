@@ -50,7 +50,7 @@ pip install -e .
 
 ## Usage
 
-Simply pass a one-column CSV file with a header (`smiles`). The output can be a `.gif` (animated) or a `.png` (single static image).
+Pass a CSV file containing a `smiles` column (any position, case-insensitive). The output can be a `.gif` (animated) or a `.png` (single static image).
 
 ```bash
 chemgifs -i molecules.csv -o molecules.gif
@@ -60,7 +60,7 @@ chemgifs -i molecules.csv -o molecules.gif
 
 | Argument | Short | Default | Description |
 |---|---|---|---|
-| `--input_csv` | `-i` | — | Input CSV file with a `smiles` column |
+| `--input_csv` | `-i` | — | Input CSV file (must contain a `smiles` column) |
 | `--output_gif` | `-o` | — | Output file. Use `.gif` for animation or `.png` for a static image |
 | `--color` | `-c` | `white` | Background color name |
 | `--size` | `-s` | `512` | Size of each molecule cell in pixels |

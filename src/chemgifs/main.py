@@ -117,12 +117,9 @@ def get_mol_svg(name, smiles, output_dir, color_name):
 
 def read_smiles(input_csv):
     with open(input_csv, "r") as f:
-        reader = csv.reader(f)
-        smiles_list = []
-        next(reader)
-        for r in reader:
-            smiles_list += [r[0]]
-    return smiles_list
+        reader = csv.DictReader(f)
+        col = next(c for c in reader.fieldnames if c.lower() == "smiles")
+        return [r[col] for r in reader]
 
 
 def svg_to_png(name, output_dir, size):
