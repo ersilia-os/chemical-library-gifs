@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "chemgifs"
-version = "0.1.0"
+version = "0.2.0"
 description = "Produce GIF files for a chemical collection"
 readme = "README.md"
 license = {file = "LICENSE"}

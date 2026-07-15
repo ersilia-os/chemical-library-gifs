@@ -8,7 +8,8 @@ import argparse
 
 from tqdm import tqdm
 from rdkit import Chem
-from rdkit.Chem import AllChem
+from rdkit.Chem import AllChem, rdCoordGen
+from rdkit.Chem.Draw import rdMolDraw2D
 from PIL import Image
 import platform
 
@@ -115,6 +116,23 @@ def get_mol_svg(name, smiles, output_dir, color_name):
     square_and_center_svg(svg_file, svg_file, color)
 
 
+def get_mol_png_rdkit(name, smiles, output_dir, color_name, size):
+    # Draws straight to PNG via RDKit's own Cairo backend, not cairosvg: mixing RDKit's
+    # bundled Cairo with cairosvg's cairocffi in the same process segfaults.
+    color = get_rgb_color(color_name)
+    mol = Chem.MolFromSmiles(smiles)
+    if mol is None:
+        return
+    rdCoordGen.AddCoords(mol)
+    drawer = rdMolDraw2D.MolDraw2DCairo(size, size)
+    opts = drawer.drawOptions()
+    opts.bondLineWidth = 1
+    opts.setBackgroundColour((color[0] / 255, color[1] / 255, color[2] / 255, 1.0))
+    rdMolDraw2D.PrepareAndDrawMolecule(drawer, mol)
+    drawer.FinishDrawing()
+    drawer.WriteDrawingText(os.path.join(output_dir, f"{name}.png"))
+
+
 def read_smiles(input_csv):
     with open(input_csv, "r") as f:
         reader = csv.DictReader(f)
@@ -162,7 +180,7 @@ def pngs_to_gif(png_files, output_gif, duration, n_rows, n_cols, cell_size, back
     )
 
 
-def run(input_csv, output_file, color_name, size, duration_ms, n_rows=1, n_cols=1, max_mols=None):
+def run(input_csv, output_file, color_name, size, duration_ms, n_rows=1, n_cols=1, max_mols=None, style="mol2svg"):
     background_rgb = get_rgb_color(color_name)
     is_png = output_file.lower().endswith(".png")
     tmp_dir = tempfile.mkdtemp("ersilia-")
@@ -176,8 +194,11 @@ def run(input_csv, output_file, color_name, size, duration_ms, n_rows=1, n_cols=
         smiles_list = smiles_list[:max_mols]
     for i, smiles in tqdm(enumerate(smiles_list)):
         name = "mol_{0}".format(str(i).zfill(6))
-        get_mol_svg(name, smiles, tmp_dir, color_name)
-        svg_to_png(name, tmp_dir, size=size)
+        if style == "rdkit":
+            get_mol_png_rdkit(name, smiles, tmp_dir, color_name, size)
+        else:
+            get_mol_svg(name, smiles, tmp_dir, color_name)
+            svg_to_png(name, tmp_dir, size=size)
     png_files = sorted(os.path.join(tmp_dir, fn) for fn in os.listdir(tmp_dir))
     if is_png:
         frame = make_grid_image(png_files, n_rows, n_cols, size, background_rgb)
@@ -225,6 +246,14 @@ def main():
         default=None,
         help="Maximum number of molecules to process.",
     )
+    args.add_argument(
+        "--style",
+        type=str,
+        choices=["mol2svg", "rdkit"],
+        default="mol2svg",
+        help="Rendering style: 'mol2svg' (default, external mol2svg binary) or "
+             "'rdkit' (RDKit CoordGen + MolDraw2D, no external binary).",
+    )
 
     parsed_args = args.parse_args()
     run(
@@ -236,6 +265,7 @@ def main():
         n_rows=parsed_args.n_rows,
         n_cols=parsed_args.n_cols,
         max_mols=parsed_args.max_mols,
+        style=parsed_args.style,
     )
 
 

@@ -7,7 +7,8 @@ from chemgifs.main import run
 SAMPLE_CSV = os.path.join(os.path.dirname(__file__), "sample.csv")
 
 
-def test_run_produces_gif():
+@pytest.mark.parametrize("style", ["mol2svg", "rdkit"])
+def test_run_produces_gif(style):
     with tempfile.TemporaryDirectory() as tmp:
         output_gif = os.path.join(tmp, "output.gif")
         run(
@@ -16,6 +17,7 @@ def test_run_produces_gif():
             color_name="white",
             size=256,
             duration_ms=200,
+            style=style,
         )
         assert os.path.exists(output_gif)
         assert os.path.getsize(output_gif) > 0
