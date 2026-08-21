@@ -68,6 +68,7 @@ chemgifs -i molecules.csv -o molecules.gif
 | `--n_rows` | | `1` | Number of rows in the grid per frame |
 | `--n_cols` | | `1` | Number of columns in the grid per frame |
 | `--max_mols` | | all | Maximum number of molecules to process (GIF only) |
+| `--style` | | `mol2svg` | Rendering style: `mol2svg` (external binary) or `rdkit` (RDKit CoordGen + MolDraw2D, no external binary — matches the depiction style used by Ersilia's `molecule-auditing` skill) |
 
 Accepted color names correspond to the official Ersilia [color palette](https://ersilia.gitbook.io/ersilia-book/styles/brand-guidelines): `white`, `mint`, `pink`, `purple`, `orange`, `yellow`, `blue`, `gray`.
 
